@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__list_tables",
+      "mcp__claude_ai_Supabase__get_advisors",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Read(//c/Users/Demir/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(python scripts/search.py \"education empathy awareness warm professional light\" --design-system -p \"Empati Zorbalik\")",
+      "Bash(python scripts/search.py \"professional modern clean education\" --domain typography -n 5)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

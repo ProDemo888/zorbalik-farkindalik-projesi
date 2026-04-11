@@ -4,6 +4,50 @@ import { useState } from "react";
 import { scenarios } from "@/lib/scenarios";
 import { validateAndUseCode } from "@/app/actions";
 
+/* ── SVG Icons ── */
+const IconBrain = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+  </svg>
+);
+
+const IconHeart = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  </svg>
+);
+
+const IconBook = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+  </svg>
+);
+
+const IconSend = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+  </svg>
+);
+
+const IconArrowRight = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+
+const IconCheck = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+const IconStar = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  </svg>
+);
+
 // Steps: 0=login, 1=scenario1, 2=feedback1, 3=scenario2, 4=feedback2, 5=thankyou
 export default function Home() {
   const [step, setStep] = useState(0);
@@ -14,11 +58,9 @@ export default function Home() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Answers for each scenario
   const [answers, setAnswers] = useState({ 1: ["", "", ""], 2: ["", "", ""] });
   const [feedback, setFeedback] = useState({ 1: null, 2: null });
 
-  // ============= LOGIN =============
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
@@ -26,23 +68,19 @@ export default function Home() {
 
     try {
       const result = await validateAndUseCode(code, firstName, lastName);
-
       if (result.error) {
         setError(result.error);
         setLoading(false);
         return;
       }
-
       setCodeId(result.codeId);
       setStep(1);
     } catch (err) {
       setError("Bir hata oluştu. Lütfen tekrar deneyin.");
     }
-
     setLoading(false);
   }
 
-  // ============= SUBMIT ANSWERS =============
   async function handleSubmitAnswers(scenarioNum) {
     setLoading(true);
     const scenario = scenarios[scenarioNum - 1];
@@ -74,13 +112,6 @@ export default function Home() {
         return;
       }
 
-      let parsedCat = ["geliştirilebilir", "geliştirilebilir", "geliştirilebilir"];
-      try {
-        if (result.category) parsedCat = JSON.parse(result.category);
-      } catch (e) {
-        console.warn("Kategori verisi okunamadı:", e);
-      }
-
       try {
         setFeedback((prev) => ({ ...prev, [scenarioNum]: JSON.parse(result.feedback) }));
       } catch (e) {
@@ -92,11 +123,9 @@ export default function Home() {
     } catch (err) {
       setError("Bir hata oluştu. Lütfen tekrar deneyin.");
     }
-
     setLoading(false);
   }
 
-  // ============= HELPERS =============
   function updateAnswer(scenarioNum, questionIdx, value) {
     setAnswers((prev) => {
       const newA = { ...prev };
@@ -111,25 +140,32 @@ export default function Home() {
   }
 
   function getProgressSteps() {
-    const steps = [
-      { label: "1", status: step >= 1 ? (step > 2 ? "completed" : "active") : "inactive" },
-      { label: "✓", status: step >= 2 ? (step > 2 ? "completed" : "active") : "inactive" },
-      { label: "2", status: step >= 3 ? (step > 4 ? "completed" : "active") : "inactive" },
-      { label: "✓", status: step >= 4 ? (step > 4 ? "completed" : "active") : "inactive" },
-      { label: "🎉", status: step >= 5 ? "active" : "inactive" },
+    return [
+      { label: "1", icon: null, status: step >= 1 ? (step > 2 ? "completed" : "active") : "inactive" },
+      { label: null, icon: "check", status: step >= 2 ? (step > 2 ? "completed" : "active") : "inactive" },
+      { label: "2", icon: null, status: step >= 3 ? (step > 4 ? "completed" : "active") : "inactive" },
+      { label: null, icon: "check", status: step >= 4 ? (step > 4 ? "completed" : "active") : "inactive" },
+      { label: null, icon: "star", status: step >= 5 ? "active" : "inactive" },
     ];
-    return steps;
   }
 
-  // ============= RENDER =============
+  function renderProgressStepIcon(s) {
+    if (s.icon === "check") return <IconCheck />;
+    if (s.icon === "star") return <IconStar />;
+    return s.label;
+  }
+
   return (
     <main>
       <div className="container">
         {/* ====== LOGIN ====== */}
         {step === 0 && (
           <div className="card">
-            <h1 className="title">Empati & Zorbalık Farkındalık</h1>
-            <p className="subtitle">
+            <div className="login-icon">
+              <IconBook />
+            </div>
+            <h1 className="title" style={{ textAlign: "center" }}>Empati & Zorbalık Farkındalık</h1>
+            <p className="subtitle" style={{ textAlign: "center" }}>
               Bu aktivitede zorbalık senaryolarını okuyacak, soruları cevaplayacak ve yapay zekâdan
               kişisel geri bildirim alacaksın.
             </p>
@@ -177,18 +213,21 @@ export default function Home() {
                 />
               </div>
 
-              {error && (
-                <p style={{ color: "var(--accent-danger)", fontSize: "0.85rem", marginBottom: 16 }}>
-                  {error}
-                </p>
-              )}
+              {error && <div className="error-msg">{error}</div>}
 
               <button
                 type="submit"
                 className="btn btn-primary"
                 disabled={loading || !firstName.trim() || !lastName.trim() || !code.trim()}
               >
-                {loading ? "Kontrol Ediliyor..." : "Aktiviteye Başla →"}
+                {loading ? (
+                  "Kontrol Ediliyor..."
+                ) : (
+                  <>
+                    Aktiviteye Başla
+                    <span style={{ display: "inline-flex", width: 18, height: 18 }}><IconArrowRight /></span>
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -201,7 +240,7 @@ export default function Home() {
               <div className="progress-steps">
                 {getProgressSteps().map((s, i) => (
                   <div key={i} className={`progress-step ${s.status}`}>
-                    {s.label}
+                    {renderProgressStepIcon(s)}
                   </div>
                 ))}
               </div>
@@ -212,7 +251,10 @@ export default function Home() {
               const scenario = scenarios[scenarioNum - 1];
               return (
                 <>
-                  <span className="scenario-label">📋 {scenario.label}</span>
+                  <span className="scenario-label">
+                    <span style={{ display: "inline-flex", width: 14, height: 14 }}><IconBook /></span>
+                    {scenario.label}
+                  </span>
                   <h2 className="scenario-title">{scenario.title}</h2>
                   <div className="scenario-story">{scenario.story}</div>
 
@@ -231,11 +273,7 @@ export default function Home() {
                     </div>
                   ))}
 
-                  {error && (
-                    <p style={{ color: "var(--accent-danger)", fontSize: "0.85rem", marginBottom: 16 }}>
-                      {error}
-                    </p>
-                  )}
+                  {error && <div className="error-msg">{error}</div>}
 
                   <button
                     className="btn btn-primary"
@@ -250,7 +288,10 @@ export default function Home() {
                         AI Analiz Ediyor...
                       </>
                     ) : (
-                      "Cevaplarımı Gönder & Geri Bildirim Al →"
+                      <>
+                        <span style={{ display: "inline-flex", width: 18, height: 18 }}><IconSend /></span>
+                        Cevaplarımı Gönder & Geri Bildirim Al
+                      </>
                     )}
                   </button>
                 </>
@@ -266,14 +307,16 @@ export default function Home() {
               <div className="progress-steps">
                 {getProgressSteps().map((s, i) => (
                   <div key={i} className={`progress-step ${s.status}`}>
-                    {s.label}
+                    {renderProgressStepIcon(s)}
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="feedback-header">
-              <div className="feedback-avatar">🧠</div>
+              <div className="feedback-avatar">
+                <IconBrain />
+              </div>
               <div className="feedback-header-text">
                 <h3>Rehberlik Öğretmeni</h3>
                 <p>Yapay Zekâ Geri Bildirimi</p>
@@ -283,28 +326,27 @@ export default function Home() {
             <div className="feedback-body">
               {(() => {
                 const scenarioNum = step === 2 ? 1 : 2;
-                const scenario = scenarios[scenarioNum - 1];
                 const fbArray = feedback[scenarioNum] || ["", "", ""];
                 const studentAnswers = answers[scenarioNum];
-                
+
                 return fbArray.map((fb, idx) => {
                   if (!fb) return null;
                   return (
-                    <div key={idx} style={{ marginBottom: "24px", padding: "16px", background: "rgba(255,255,255,0.03)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-subtle)" }}>
-                       <div style={{ marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px dashed var(--border-glass)"}}>
-                         <div style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--text-muted)", marginBottom: "4px" }}>
-                           Senin Cevabın (Soru {idx + 1}):
-                         </div>
-                         <div style={{ fontStyle: "italic", color: "var(--text-secondary)"}}>
-                           "{studentAnswers[idx]}"
-                         </div>
-                       </div>
-                       <div>
-                         <div style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--accent-primary-light)", marginBottom: "4px" }}>
-                           Rehberlik Yorumu:
-                         </div>
-                         <div>{fb}</div>
-                       </div>
+                    <div className="feedback-item" key={idx}>
+                      <div className="feedback-item-header">
+                        <div className="feedback-item-label">
+                          Senin Cevabın (Soru {idx + 1}):
+                        </div>
+                        <div className="feedback-item-answer">
+                          &ldquo;{studentAnswers[idx]}&rdquo;
+                        </div>
+                      </div>
+                      <div>
+                        <div className="feedback-item-commentary">
+                          Rehberlik Yorumu:
+                        </div>
+                        <div>{fb}</div>
+                      </div>
                     </div>
                   );
                 });
@@ -320,7 +362,17 @@ export default function Home() {
                   else setStep(5);
                 }}
               >
-                {step === 2 ? "Sonraki Senaryoya Geç →" : "Aktiviteyi Tamamla →"}
+                {step === 2 ? (
+                  <>
+                    Sonraki Senaryoya Geç
+                    <span style={{ display: "inline-flex", width: 18, height: 18 }}><IconArrowRight /></span>
+                  </>
+                ) : (
+                  <>
+                    Aktiviteyi Tamamla
+                    <span style={{ display: "inline-flex", width: 18, height: 18 }}><IconCheck /></span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -329,7 +381,9 @@ export default function Home() {
         {/* ====== THANK YOU ====== */}
         {step === 5 && (
           <div className="card" style={{ textAlign: "center" }}>
-            <div className="thankyou-icon">💜</div>
+            <div className="thankyou-icon">
+              <IconHeart />
+            </div>
             <h1 className="title" style={{ marginBottom: 16 }}>Tebrikler!</h1>
             <p className="thankyou-message">
               Aktiviteyi başarıyla tamamladın. Bugün zorbalık senaryolarını analiz ederek
@@ -339,8 +393,8 @@ export default function Home() {
               etrafındaki insanların duygularına duyarlı olduğunda, okullarımız ve
               dünyamız çok daha güvenli bir yer olur.
               <br /><br />
-              <span style={{ color: "var(--accent-primary-light)" }}>
-                Katılımın için teşekkür ederiz. 🙏
+              <span style={{ color: "var(--accent-primary)" }}>
+                Katılımın için teşekkür ederiz.
               </span>
             </p>
           </div>
