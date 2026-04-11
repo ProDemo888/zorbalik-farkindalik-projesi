@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+
+const MAX_REQUESTS_PER_CODE = 3;
 
 const SYSTEM_PROMPT = `Sen çok sıcakkanlı, empati kurabilen ancak analiz yeteneği yüksek bir Rehberlik Öğretmenisin.
 
@@ -19,12 +22,47 @@ Kurallar:
 
 export async function POST(request) {
   try {
-    const { scenario, answers, studentName } = await request.json();
+    const { scenario, answers, studentName, accessCodeId, scenarioNumber } = await request.json();
 
-    if (!scenario || !answers || answers.length !== 3) {
+    if (!scenario || !answers || answers.length !== 3 || !accessCodeId || !scenarioNumber) {
       return NextResponse.json(
         { error: "Geçersiz istek." },
         { status: 400 }
+      );
+    }
+
+    // --- Rate limiting: max 3 feedback requests per access code ---
+    const { count, error: countError } = await supabaseAdmin
+      .from("responses")
+      .select("*", { count: "exact", head: true })
+      .eq("access_code_id", accessCodeId);
+
+    if (countError) {
+      console.error("Rate limit check error:", countError);
+      return NextResponse.json(
+        { error: "Sunucu hatası." },
+        { status: 500 }
+      );
+    }
+
+    if (count >= MAX_REQUESTS_PER_CODE) {
+      return NextResponse.json(
+        { error: "Bu kod için istek limiti aşıldı." },
+        { status: 429 }
+      );
+    }
+
+    // --- Validate access code exists and is used ---
+    const { data: codeData, error: codeError } = await supabaseAdmin
+      .from("access_codes")
+      .select("id, used")
+      .eq("id", accessCodeId)
+      .single();
+
+    if (codeError || !codeData || !codeData.used) {
+      return NextResponse.json(
+        { error: "Geçersiz erişim kodu." },
+        { status: 403 }
       );
     }
 
@@ -87,10 +125,9 @@ Lütfen her bir soruya verdiği cevap için JSON formatında yapıcı bir geri b
 
     const data = await response.json();
     let feedbackText = data.choices?.[0]?.message?.content || "";
-    
+
     let parsedFeedback;
     try {
-      // Robust JSON extraction
       const jsonMatch = feedbackText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
          parsedFeedback = JSON.parse(jsonMatch[0]);
@@ -124,8 +161,28 @@ Lütfen her bir soruya verdiği cevap için JSON formatında yapıcı bir geri b
       parsedFeedback.category_3 || "geliştirilebilir"
     ];
 
-    // Return stringified array so the DB schema (TEXT) still accepts it perfectly
-    return NextResponse.json({ 
+    // --- Save response to DB server-side ---
+    const { error: insertError } = await supabaseAdmin
+      .from("responses")
+      .insert({
+        access_code_id: accessCodeId,
+        student_name: studentName,
+        scenario_number: scenarioNumber,
+        answer_1: answers[0],
+        answer_2: answers[1],
+        answer_3: answers[2],
+        ai_feedback: JSON.stringify(feedbackArray),
+        category_1: categoryArray[0],
+        category_2: categoryArray[1],
+        category_3: categoryArray[2],
+      });
+
+    if (insertError) {
+      console.error("Failed to save response:", insertError);
+      // Don't fail the request — student still gets their feedback
+    }
+
+    return NextResponse.json({
       feedback: JSON.stringify(feedbackArray),
       category: JSON.stringify(categoryArray)
     });

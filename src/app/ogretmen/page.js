@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { scenarios } from "@/lib/scenarios";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from "recharts";
-import { verifyTeacherPassword } from "./actions";
+import { verifyTeacherPassword, checkTeacherAuth, fetchTeacherResponses, logoutTeacher } from "./actions";
 
 export default function TeacherDashboard() {
   const [responses, setResponses] = useState([]);
@@ -26,12 +25,15 @@ export default function TeacherDashboard() {
   };
 
   useEffect(() => {
-    const isAuth = localStorage.getItem("teacher_auth") === "true";
-    if (isAuth) {
-      setIsAuthenticated(true);
-      fetchResponses();
+    async function checkAuth() {
+      const isAuth = await checkTeacherAuth();
+      if (isAuth) {
+        setIsAuthenticated(true);
+        loadResponses();
+      }
+      setAuthChecking(false);
     }
-    setAuthChecking(false);
+    checkAuth();
   }, []);
 
   async function handleLogin(e) {
@@ -41,25 +43,30 @@ export default function TeacherDashboard() {
     const res = await verifyTeacherPassword(password);
     if (res.success) {
       setIsAuthenticated(true);
-      localStorage.setItem("teacher_auth", "true");
-      fetchResponses();
+      loadResponses();
     } else {
       setAuthError(res.error);
     }
     setAuthChecking(false);
   }
 
-  async function fetchResponses() {
+  async function loadResponses() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("responses")
-      .select("*, access_codes(code)")
-      .order("created_at", { ascending: false });
-
-    if (!error && data) {
-      setResponses(data);
+    const result = await fetchTeacherResponses();
+    if (result.error) {
+      // If unauthorized, log out
+      setIsAuthenticated(false);
+    } else if (result.data) {
+      setResponses(result.data);
     }
     setLoading(false);
+  }
+
+  async function handleLogout() {
+    await logoutTeacher();
+    setIsAuthenticated(false);
+    setPassword("");
+    setResponses([]);
   }
 
   const filtered = responses.filter((r) => {
@@ -218,8 +225,11 @@ export default function TeacherDashboard() {
               <button className="btn btn-primary" onClick={() => setShowStats(true)} style={{ width: "auto", background: "rgba(124, 58, 237, 0.2)", color: "var(--text-primary)" }}>
                 📈 İstatistikler
               </button>
-              <button className="btn btn-secondary" onClick={fetchResponses} style={{ width: "auto" }}>
+              <button className="btn btn-secondary" onClick={loadResponses} style={{ width: "auto" }}>
                 🔄 Yenile
+              </button>
+              <button className="btn btn-secondary" onClick={handleLogout} style={{ width: "auto" }}>
+                Çıkış
               </button>
             </div>
           </div>

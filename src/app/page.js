@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { scenarios } from "@/lib/scenarios";
+import { validateAndUseCode } from "@/app/actions";
 
 // Steps: 0=login, 1=scenario1, 2=feedback1, 3=scenario2, 4=feedback2, 5=thankyou
 export default function Home() {
@@ -25,37 +25,15 @@ export default function Home() {
     setLoading(true);
 
     try {
-      // Validate access code
-      const { data, error: fetchError } = await supabase
-        .from("access_codes")
-        .select("*")
-        .eq("code", code.trim().toUpperCase())
-        .single();
+      const result = await validateAndUseCode(code, firstName, lastName);
 
-      if (fetchError || !data) {
-        setError("Geçersiz erişim kodu. Lütfen tekrar deneyin.");
+      if (result.error) {
+        setError(result.error);
         setLoading(false);
         return;
       }
 
-      if (data.used) {
-        setError("Bu erişim kodu zaten kullanılmış.");
-        setLoading(false);
-        return;
-      }
-
-      // Mark code as used
-      const fullName = `${firstName.trim()} ${lastName.trim()}`;
-      await supabase
-        .from("access_codes")
-        .update({
-          used: true,
-          used_at: new Date().toISOString(),
-          student_name: fullName,
-        })
-        .eq("id", data.id);
-
-      setCodeId(data.id);
+      setCodeId(result.codeId);
       setStep(1);
     } catch (err) {
       setError("Bir hata oluştu. Lütfen tekrar deneyin.");
@@ -72,7 +50,6 @@ export default function Home() {
     const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
     try {
-      // Call our API route for AI feedback
       const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,6 +61,8 @@ export default function Home() {
           },
           answers: studentAnswers,
           studentName: fullName,
+          accessCodeId: codeId,
+          scenarioNumber: scenarioNum,
         }),
       });
 
@@ -102,27 +81,12 @@ export default function Home() {
         console.warn("Kategori verisi okunamadı:", e);
       }
 
-      // Save response to Supabase
-      await supabase.from("responses").insert({
-        access_code_id: codeId,
-        student_name: fullName,
-        scenario_number: scenarioNum,
-        answer_1: studentAnswers[0],
-        answer_2: studentAnswers[1],
-        answer_3: studentAnswers[2],
-        ai_feedback: result.feedback,
-        category_1: parsedCat[0],
-        category_2: parsedCat[1],
-        category_3: parsedCat[2],
-      });
-
       try {
         setFeedback((prev) => ({ ...prev, [scenarioNum]: JSON.parse(result.feedback) }));
       } catch (e) {
         setFeedback((prev) => ({ ...prev, [scenarioNum]: [result.feedback, "", ""] }));
       }
 
-      // Move to feedback step
       if (scenarioNum === 1) setStep(2);
       else setStep(4);
     } catch (err) {
