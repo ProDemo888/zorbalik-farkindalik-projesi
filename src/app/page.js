@@ -4,6 +4,14 @@ import { useState } from "react";
 import { scenarios } from "@/lib/scenarios";
 import { validateAndUseCode } from "@/app/actions";
 
+// Steps: 0=login, (2k-1)=scenario k, (2k)=feedback k (k=1..N), (2N+1)=thankyou
+const N = scenarios.length;
+const THANKYOU_STEP = 2 * N + 1;
+
+function isScenarioStep(s) { return s % 2 === 1 && s >= 1 && s <= 2 * N - 1; }
+function isFeedbackStep(s) { return s % 2 === 0 && s >= 2 && s <= 2 * N; }
+function scenarioNumFromStep(s) { return Math.ceil(s / 2); }
+
 /* ── SVG Icons ── */
 const IconBrain = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -48,7 +56,6 @@ const IconStar = () => (
   </svg>
 );
 
-// Steps: 0=login, 1=scenario1, 2=feedback1, 3=scenario2, 4=feedback2, 5=thankyou
 export default function Home() {
   const [step, setStep] = useState(0);
   const [code, setCode] = useState("");
@@ -58,8 +65,12 @@ export default function Home() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [answers, setAnswers] = useState({ 1: ["", "", ""], 2: ["", "", ""] });
-  const [feedback, setFeedback] = useState({ 1: null, 2: null });
+  const [answers, setAnswers] = useState(() =>
+    Object.fromEntries(scenarios.map((s) => [s.id, ["", "", ""]]))
+  );
+  const [feedback, setFeedback] = useState(() =>
+    Object.fromEntries(scenarios.map((s) => [s.id, null]))
+  );
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -73,8 +84,28 @@ export default function Home() {
         setLoading(false);
         return;
       }
+
       setCodeId(result.codeId);
-      setStep(1);
+
+      if (result.resume && result.resume.length > 0) {
+        // Restore feedback for each completed scenario
+        const restoredFeedback = {};
+        for (const r of result.resume) {
+          try {
+            restoredFeedback[r.scenario_number] = JSON.parse(r.ai_feedback);
+          } catch {
+            restoredFeedback[r.scenario_number] = [r.ai_feedback || "", "", ""];
+          }
+        }
+        setFeedback((prev) => ({ ...prev, ...restoredFeedback }));
+
+        // Jump to the next unfinished scenario, or thank-you if all done
+        const completed = result.resume.map((r) => r.scenario_number);
+        const lastCompleted = Math.max(...completed);
+        setStep(lastCompleted >= N ? THANKYOU_STEP : 2 * lastCompleted + 1);
+      } else {
+        setStep(1);
+      }
     } catch (err) {
       setError("Bir hata oluştu. Lütfen tekrar deneyin.");
     }
@@ -118,8 +149,7 @@ export default function Home() {
         setFeedback((prev) => ({ ...prev, [scenarioNum]: [result.feedback, "", ""] }));
       }
 
-      if (scenarioNum === 1) setStep(2);
-      else setStep(4);
+      setStep(2 * scenarioNum);
     } catch (err) {
       setError("Bir hata oluştu. Lütfen tekrar deneyin.");
     }
@@ -140,13 +170,31 @@ export default function Home() {
   }
 
   function getProgressSteps() {
-    return [
-      { label: "1", icon: null, status: step >= 1 ? (step > 2 ? "completed" : "active") : "inactive" },
-      { label: null, icon: "check", status: step >= 2 ? (step > 2 ? "completed" : "active") : "inactive" },
-      { label: "2", icon: null, status: step >= 3 ? (step > 4 ? "completed" : "active") : "inactive" },
-      { label: null, icon: "check", status: step >= 4 ? (step > 4 ? "completed" : "active") : "inactive" },
-      { label: null, icon: "star", status: step >= 5 ? "active" : "inactive" },
-    ];
+    const steps = [];
+    for (let i = 1; i <= N; i++) {
+      const scenarioStep = 2 * i - 1;
+      const feedbackStep = 2 * i;
+      steps.push({
+        label: `${i}`,
+        icon: null,
+        status: step >= scenarioStep
+          ? (step > feedbackStep ? "completed" : "active")
+          : "inactive",
+      });
+      steps.push({
+        label: null,
+        icon: "check",
+        status: step >= feedbackStep
+          ? (step > feedbackStep ? "completed" : "active")
+          : "inactive",
+      });
+    }
+    steps.push({
+      label: null,
+      icon: "star",
+      status: step >= THANKYOU_STEP ? "active" : "inactive",
+    });
+    return steps;
   }
 
   function renderProgressStepIcon(s) {
@@ -233,8 +281,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* ====== SCENARIO (1 or 2) ====== */}
-        {(step === 1 || step === 3) && (
+        {/* ====== SCENARIO ====== */}
+        {isScenarioStep(step) && (
           <div className="card">
             <div className="progress-bar-container">
               <div className="progress-steps">
@@ -247,7 +295,7 @@ export default function Home() {
             </div>
 
             {(() => {
-              const scenarioNum = step === 1 ? 1 : 2;
+              const scenarioNum = scenarioNumFromStep(step);
               const scenario = scenarios[scenarioNum - 1];
               return (
                 <>
@@ -300,8 +348,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* ====== AI FEEDBACK (1 or 2) ====== */}
-        {(step === 2 || step === 4) && (
+        {/* ====== AI FEEDBACK ====== */}
+        {isFeedbackStep(step) && (
           <div className="card feedback-container">
             <div className="progress-bar-container">
               <div className="progress-steps">
@@ -325,7 +373,7 @@ export default function Home() {
 
             <div className="feedback-body">
               {(() => {
-                const scenarioNum = step === 2 ? 1 : 2;
+                const scenarioNum = scenarioNumFromStep(step);
                 const fbArray = feedback[scenarioNum] || ["", "", ""];
                 const studentAnswers = answers[scenarioNum];
 
@@ -358,11 +406,12 @@ export default function Home() {
                 className="btn btn-primary"
                 onClick={() => {
                   setError("");
-                  if (step === 2) setStep(3);
-                  else setStep(5);
+                  const scenarioNum = scenarioNumFromStep(step);
+                  if (scenarioNum < N) setStep(step + 1);
+                  else setStep(THANKYOU_STEP);
                 }}
               >
-                {step === 2 ? (
+                {scenarioNumFromStep(step) < N ? (
                   <>
                     Sonraki Senaryoya Geç
                     <span style={{ display: "inline-flex", width: 18, height: 18 }}><IconArrowRight /></span>
@@ -379,7 +428,7 @@ export default function Home() {
         )}
 
         {/* ====== THANK YOU ====== */}
-        {step === 5 && (
+        {step === THANKYOU_STEP && (
           <div className="card" style={{ textAlign: "center" }}>
             <div className="thankyou-icon">
               <IconHeart />

@@ -11,7 +11,9 @@
       "Read(//c/Users/Demir/.claude/skills/ui-ux-pro-max/**)",
       "Bash(python scripts/search.py \"education empathy awareness warm professional light\" --design-system -p \"Empati Zorbalik\")",
       "Bash(python scripts/search.py \"professional modern clean education\" --domain typography -n 5)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(pandoc \"ŞAKA MI ZORBALIK MI \\(1\\).docx\" -t plain)",
+      "Bash(where pandoc *)"
     ]
   }
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-const MAX_REQUESTS_PER_CODE = 3;
+const MAX_REQUESTS_PER_CODE = 5;
 
 const SYSTEM_PROMPT = `Sen çok sıcakkanlı, empati kurabilen ancak analiz yeteneği yüksek bir Rehberlik Öğretmenisin.
 

@@ -8,24 +8,55 @@ export async function validateAndUseCode(code, firstName, lastName) {
   }
 
   const fullName = `${firstName.trim()} ${lastName.trim()}`;
+  const normalizedCode = code.trim().toUpperCase();
 
-  // Call atomic RPC function — eliminates race condition
+  // Try atomic RPC first (fresh start — marks code as used)
   const { data, error } = await supabaseAdmin.rpc("use_access_code", {
-    p_code: code.trim().toUpperCase(),
+    p_code: normalizedCode,
     p_student_name: fullName,
   });
 
-  if (error) {
-    console.error("RPC error:", error);
+  const result = Array.isArray(data) ? data[0] : data;
+
+  if (!error && result?.success) {
+    return { success: true, codeId: result.id };
+  }
+
+  // RPC failed — code may already be used. Check for resume.
+  const { data: codeData, error: codeError } = await supabaseAdmin
+    .from("access_codes")
+    .select("id, used")
+    .eq("code", normalizedCode)
+    .single();
+
+  if (codeError || !codeData) {
+    return { error: "Geçersiz erişim kodu." };
+  }
+
+  if (!codeData.used) {
+    return { error: "Bir hata oluştu. Lütfen tekrar deneyin." };
+  }
+
+  // Code is used — check if this student already submitted responses
+  const { data: existingResponses, error: responsesError } = await supabaseAdmin
+    .from("responses")
+    .select("scenario_number, answer_1, answer_2, answer_3, ai_feedback, category_1, category_2, category_3")
+    .eq("access_code_id", codeData.id)
+    .eq("student_name", fullName)
+    .order("scenario_number");
+
+  if (responsesError) {
     return { error: "Bir hata oluştu." };
   }
 
-  // RPC returns an array with one row: { id, success }
-  const result = Array.isArray(data) ? data[0] : data;
-
-  if (!result || !result.success) {
-    return { error: "Geçersiz veya kullanılmış erişim kodu." };
+  if (!existingResponses || existingResponses.length === 0) {
+    return { error: "Bu erişim kodu başka bir öğrenci tarafından kullanılmış." };
   }
 
-  return { success: true, codeId: result.id };
+  // Return codeId + previous responses so client can resume
+  return {
+    success: true,
+    codeId: codeData.id,
+    resume: existingResponses,
+  };
 }

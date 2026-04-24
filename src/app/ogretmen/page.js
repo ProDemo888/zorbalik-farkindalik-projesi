@@ -161,13 +161,13 @@ export default function TeacherDashboard() {
   });
 
   const totalStudents = new Set(responses.map((r) => r.access_code_id)).size;
-  const completedBoth = (() => {
+  const completedAll = (() => {
     const byCode = {};
     responses.forEach((r) => {
       if (!byCode[r.access_code_id]) byCode[r.access_code_id] = new Set();
       byCode[r.access_code_id].add(r.scenario_number);
     });
-    return Object.values(byCode).filter((s) => s.size === 2).length;
+    return Object.values(byCode).filter((s) => s.size === scenarios.length).length;
   })();
 
   const statsData = { doğru: 0, geliştirilebilir: 0, yanlış: 0 };
@@ -344,8 +344,8 @@ export default function TeacherDashboard() {
               <div className="stat-card__label">Katılan Öğrenci</div>
             </div>
             <div className="stat-card stat-card--success">
-              <div className="stat-card__value">{completedBoth}</div>
-              <div className="stat-card__label">İkisini de Tamamlayan</div>
+              <div className="stat-card__value">{completedAll}</div>
+              <div className="stat-card__label">Tümünü Tamamlayan</div>
             </div>
             <div className="stat-card stat-card--info">
               <div className="stat-card__value">{responses.length}</div>
@@ -367,8 +367,9 @@ export default function TeacherDashboard() {
               onChange={(e) => setFilter(e.target.value)}
             >
               <option value="all">Tüm Senaryolar</option>
-              <option value="1">Senaryo 1</option>
-              <option value="2">Senaryo 2</option>
+              {scenarios.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
             </select>
           </div>
         </div>

@@ -53,4 +53,85 @@ Bir başka gün koridorda yürürken sınıf arkadaşı Elif onu görmezden gele
       },
     ],
   },
+  {
+    id: 3,
+    label: "Senaryo 3",
+    title: "Dijital Saldırı",
+    story: `Ata, sınıf arkadaşı Zehra'ya yönelik tacizini dijital dünyaya taşımıştır. Sosyal medyada (Instagram, TikTok gibi platformlarda) Zehra hakkında asılsız ve aşağılayıcı yorumlar yapmakta, onun izni olmadan özel fotoğraflarını paylaşarak altına taciz edici yorumlar yazmaktadır.
+
+En ciddi adım olarak Ata, Zehra'nın fotoğraf ve kişisel bilgilerini kullanarak onun adına sahte bir sosyal medya hesabı açmış ve bu hesaptan Zehra'nın itibarını zedeleyecek uygunsuz paylaşımlarda bulunmaktadır.
+
+Bu dijital saldırılar okul çevresinde hızla yayılmaktadır. Zehra, bu durumu ailesine veya öğretmenine anlatmaktan büyük ölçüde çekinmektedir.`,
+    questions: [
+      {
+        tag: "Empati",
+        tagClass: "empati",
+        text: `Sosyal medyada hakkında asılsız yorumlar yapılan, özel fotoğrafları izinsiz paylaşılan ve adına sahte hesap açılan Zehra, hangi yoğun duygusal tepkileri yaşıyor olabilir? Bu dijital saldırıların okul ortamına yansımaları nasıl olur?`,
+      },
+      {
+        tag: "Durum Analizi",
+        tagClass: "analiz",
+        text: `Ata'nın Zehra'nın fotoğraf ve bilgilerini kullanarak sahte hesap açması ve uygunsuz paylaşımlarda bulunması hangi yasal ve etik ihlalleri içerir? Siber zorbalığı yüz yüze zorbalıktan ayıran en kritik fark nedir?`,
+      },
+      {
+        tag: "Çözümleme",
+        tagClass: "cozum",
+        text: `Zehra, bu dijital saldırıları durdurmak için güvenliğini tehlikeye atmadan hangi somut adımları atmalıdır? Zehra'nın bu zor durumu yaşadığını fark eden bir arkadaşı ona nasıl yardım edebilir?`,
+      },
+    ],
+  },
+  {
+    id: 4,
+    label: "Senaryo 4",
+    title: "Popülerliğin Gölgesi",
+    story: `Egemen, sınıfın en popüler grubunun üyesidir. Bu popülerlik, ona bir tür "dokunulmazlık" hissi vermektedir. Sınıf arkadaşı Ercan ise daha içe dönük, derslerinde başarılı ama sosyal çevresi sınırlı bir öğrencidir.
+
+Egemen, neredeyse her gün Ercan'a; bazen ders arasında yüksek sesle, bazen de grup sohbetlerinde alaycı ve aşağılayıcı lakaplar takmakta ve onu küçük düşürücü sözler söylemektedir. Egemen'in grubundaki diğer öğrenciler genellikle bu duruma gülerek veya sessiz kalarak eşlik etmektedir.
+
+Ercan giderek daha çok yalnızlaşmış hissetmekte, teneffüslerde sınıftan kaçınmakta ve bu durumu bildirmenin her şeyi daha da kötüleştireceğinden korktuğu için kimseye anlatamamaktadır.`,
+    questions: [
+      {
+        tag: "Empati",
+        tagClass: "empati",
+        text: `Ercan bu durumu yaşarken ne tür duygular hissediyor olabilir? (utanç, korku, çaresizlik...) Bu duygular onun okul hayatını, derslerini ve sosyal çevresini nasıl etkiliyor olabilir?`,
+      },
+      {
+        tag: "Durum Analizi",
+        tagClass: "analiz",
+        text: `İzleyicilerin sessiz kalması veya gülerek eşlik etmesi Egemen'in zorba davranışını nasıl etkiliyor? Sınıftaki diğer öğrencilerin bu sessizliği, zorbalığın devam etmesinde ne gibi bir rol oynuyor?`,
+      },
+      {
+        tag: "Çözümleme",
+        tagClass: "cozum",
+        text: `Egemen'in bu davranışı sona erdirmesi için, Ercan'ın kendini koruyarak ve durumu tırmandırmadan kullanabileceği ilk adımlar ne olabilir? Sen bir izleyici olarak bu durumu güvenli bir şekilde durdurmak için ne yapardın?`,
+      },
+    ],
+  },
+  {
+    id: 5,
+    label: "Senaryo 5",
+    title: "Teneffüs Stresi",
+    story: `Kaan, 9. sınıf öğrencisi; fiziksel olarak güçlü ve dikkat çekici biridir. Arda ise daha sakin, narin ve akademik olarak başarılı bir öğrencidir.
+
+Kaan, neredeyse her teneffüs grup arkadaşlarıyla birlikte Arda'yı hedef almaktadır. Kalabalık dağılmadan hemen önce Arda'ya yaklaşıp sertçe itmekte, omuz atmakta ve merdivenlerde çelme takmaya çalışmaktadır. Bir keresinde Arda'nın sırt çantasını alıp içindeki kitapları yere fırlatmıştır.
+
+Bu davranışlar diğer öğrencilerin gözü önünde gerçekleşmektedir. Arda bu durum yüzünden okula gergin gelmekte, sürekli tetikte olmakta ve daha sert karşılık görmek korkusuyla durumu kimseye anlatamamaktadır.`,
+    questions: [
+      {
+        tag: "Empati",
+        tagClass: "empati",
+        text: `Kaan'ın bu eylemleri, Arda'nın okul güvenliği ve ait olma duygusunu nasıl etkiliyor? Arda'nın çantasının ve kitaplarının yere fırlatılması, maddi hasarın ötesinde hangi duygusal hasarı yaratır?`,
+      },
+      {
+        tag: "Durum Analizi",
+        tagClass: "analiz",
+        text: `Zorbalığı gülerek izleyen öğrenciler, bu zorba davranışın devam etmesini nasıl teşvik eder? Kaan'ın Arda'yı özellikle kalabalık ortamda hedef alması, onun hangi ihtiyacını karşılıyor olabilir?`,
+      },
+      {
+        tag: "Çözümleme",
+        tagClass: "cozum",
+        text: `Arda, bu tür fiziksel temas anlarında Kaan'a karşı tepkisini ve iletişimini nasıl yönetmelidir? Müdahale etmekten çekinen bir izleyici, Arda'ya görünmez ve güvenli yollarla nasıl yardım edebilir?`,
+      },
+    ],
+  },
 ];
