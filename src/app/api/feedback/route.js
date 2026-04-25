@@ -31,11 +31,12 @@ export async function POST(request) {
       );
     }
 
-    // --- Rate limiting: max 3 feedback requests per access code ---
+    // --- Rate limiting: max 5 feedback requests per access code and student ---
     const { count, error: countError } = await supabaseAdmin
       .from("responses")
       .select("*", { count: "exact", head: true })
-      .eq("access_code_id", accessCodeId);
+      .eq("access_code_id", accessCodeId)
+      .eq("student_name", studentName);
 
     if (countError) {
       console.error("Rate limit check error:", countError);
