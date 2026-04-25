@@ -68,6 +68,9 @@ export default function Home() {
   const [answers, setAnswers] = useState(() =>
     Object.fromEntries(scenarios.map((s) => [s.id, ["", "", ""]]))
   );
+  const [showWarnings, setShowWarnings] = useState(() =>
+    Object.fromEntries(scenarios.map((s) => [s.id, [false, false, false]]))
+  );
   const [feedback, setFeedback] = useState(() =>
     Object.fromEntries(scenarios.map((s) => [s.id, null]))
   );
@@ -163,10 +166,37 @@ export default function Home() {
       newA[scenarioNum][questionIdx] = value;
       return newA;
     });
+    // Hide warning when student starts typing again
+    setShowWarnings((prev) => {
+      const newWarnings = { ...prev };
+      newWarnings[scenarioNum] = [...newWarnings[scenarioNum]];
+      newWarnings[scenarioNum][questionIdx] = false;
+      return newWarnings;
+    });
   }
 
   function canSubmit(scenarioNum) {
-    return answers[scenarioNum].every((a) => a.trim().length > 15);
+    const MIN_CHARS = 60; // Minimum for a substantial response
+    const RECOMMENDED_CHARS = 500; // Good paragraph length
+    const MAX_CHARS = 800; // Upper limit to prevent excessive length
+
+    return answers[scenarioNum].every((a) => {
+      const trimmed = a.trim();
+      return trimmed.length >= MIN_CHARS && trimmed.length <= MAX_CHARS;
+    });
+  }
+
+  function getAnswerQuality(answer) {
+    const trimmed = answer.trim();
+    const MIN_CHARS = 60;
+    const RECOMMENDED_CHARS = 500;
+    const MAX_CHARS = 800;
+
+    if (trimmed.length === 0) return { quality: "empty", color: "var(--text-muted)" };
+    if (trimmed.length < MIN_CHARS) return { quality: "too-short", color: "#E17055" };
+    if (trimmed.length < RECOMMENDED_CHARS) return { quality: "short", color: "#FDCB6E" };
+    if (trimmed.length > MAX_CHARS) return { quality: "too-long", color: "#E17055" };
+    return { quality: "good", color: "#00B894" };
   }
 
   function getProgressSteps() {
@@ -312,12 +342,82 @@ export default function Home() {
                         <span className={`question-tag ${q.tagClass}`}>{q.tag}</span>
                         {q.text}
                       </label>
-                      <textarea
-                        className="form-textarea"
-                        placeholder="Düşüncelerini buraya yaz..."
-                        value={answers[scenarioNum][idx]}
-                        onChange={(e) => updateAnswer(scenarioNum, idx, e.target.value)}
-                      />
+                      <div>
+                        <textarea
+                          className="form-textarea"
+                          placeholder="Düşüncelerini buraya yaz... (minimum 60 karakter)"
+                          value={answers[scenarioNum][idx]}
+                          onChange={(e) => updateAnswer(scenarioNum, idx, e.target.value)}
+                          onBlur={() => {
+                            // Show warning after exiting textarea
+                            setShowWarnings((prev) => {
+                              const newWarnings = { ...prev };
+                              newWarnings[scenarioNum] = [...newWarnings[scenarioNum]];
+                              newWarnings[scenarioNum][idx] = true;
+                              return newWarnings;
+                            });
+                          }}
+                          style={{
+                            borderColor: getAnswerQuality(answers[scenarioNum][idx]).color,
+                          }}
+                        />
+                        <div style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginTop: 8,
+                          fontSize: "0.8rem",
+                        }}>
+                          <div>
+                            <span style={{
+                              color: getAnswerQuality(answers[scenarioNum][idx]).color,
+                              fontWeight: 500,
+                            }}>
+                              {(() => {
+                                const quality = getAnswerQuality(answers[scenarioNum][idx]);
+                                const chars = answers[scenarioNum][idx].trim().length;
+                                switch(quality.quality) {
+                                  case "too-short":
+                                    return `${chars}/60 karakter (minimum)`;
+                                  case "short":
+                                    return `${chars}/500 karakter (önerilen)`;
+                                  case "good":
+                                    return `${chars}/800 karakter`;
+                                  case "too-long":
+                                    return `${chars}/800 karakter (maksimum)`;
+                                  default:
+                                    return `${chars} karakter`;
+                                }
+                              })()}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Warning only shows after exiting textarea */}
+                        {showWarnings[scenarioNum]?.[idx] && (
+                          <div style={{
+                            marginTop: 12,
+                            padding: "12px",
+                            background: "var(--warning-bg)",
+                            border: "1px solid var(--warning-color)",
+                            borderRadius: "var(--radius-sm)",
+                            fontSize: "0.85rem",
+                            color: "var(--text-primary)",
+                            lineHeight: 1.5,
+                          }}>
+                            {(() => {
+                              const quality = getAnswerQuality(answers[scenarioNum][idx]);
+                              switch(quality.quality) {
+                                case "too-short":
+                                  return "⚠️ Cevabın çok kısa - en az 60 karakter gerekli.";
+                                case "too-long":
+                                  return "⚠️ Maksimum karakter sınırına ulaştın.";
+                                default:
+                                  return "";
+                              }
+                            })()}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
 
@@ -446,6 +546,19 @@ export default function Home() {
                 Katılımın için teşekkür ederiz.
               </span>
             </p>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                // Navigate to live panel with codeId for verification
+                if (typeof window !== "undefined" && codeId) {
+                  window.location.href = `/canli-panel?codeId=${codeId}`;
+                }
+              }}
+              style={{ marginTop: 24 }}
+            >
+              Canlı Sınıf Paneline Geç
+              <span style={{ display: "inline-flex", width: 18, height: 18 }}><IconArrowRight /></span>
+            </button>
           </div>
         )}
       </div>

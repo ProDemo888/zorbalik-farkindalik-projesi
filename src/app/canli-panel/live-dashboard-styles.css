@@ -1,0 +1,194 @@
+/* Additional styles for Live Student Dashboard */
+/* These can be added to your global.css or imported as needed */
+
+/* Live indicator pulse animation */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 184, 148, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 184, 148, 0);
+  }
+}
+
+.live-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* New response animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.response-card {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Response card hover effect */
+.response-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Improved stat cards */
+.stat-card {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover::before {
+  transform: translateX(100%);
+}
+
+/* Live feed container */
+.live-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Connection status styles */
+.connection-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.connection-indicator.connected {
+  background: var(--success-bg);
+  color: var(--success-color);
+}
+
+.connection-indicator.disconnected {
+  background: var(--warning-bg);
+  color: var(--warning-color);
+}
+
+/* Button hover effects */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Activity chart container */
+.activity-chart-container {
+  background: var(--bg-card-alt);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-light);
+}
+
+/* Improved responsive design */
+@media (max-width: 768px) {
+  .stat-card {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .live-feed-container {
+    gap: 12px;
+  }
+
+  .response-card {
+    padding: 16px;
+  }
+
+  .connection-indicator {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+}
+
+/* Empty state improvements */
+.empty-state {
+  text-align: center;
+  padding: 64px 32px;
+  background: var(--bg-card-alt);
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--border-light);
+}
+
+/* Improved icon buttons */
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: var(--bg-card-alt);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+/* Scrollbar styling for better UX */
+.live-feed-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.live-feed-container::-webkit-scrollbar-track {
+  background: var(--bg-card-alt);
+  border-radius: 4px;
+}
+
+.live-feed-container::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 4px;
+}
+
+.live-feed-container::-webkit-scrollbar-thumb:hover {
+  background: var(--border-heavy);
+}
+
+/* AI Feedback reveal animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.ai-feedback-content {
+  animation: fadeIn 0.3s ease-out;
+}
