@@ -31,10 +31,10 @@ export async function POST(request) {
       );
     }
 
-    // --- Rate limiting: max 5 feedback requests per access code and student ---
-    const { count, error: countError } = await supabaseAdmin
+    // --- Rate limiting: max 5 feedback requests per access code and student (distinct scenarios) ---
+    const { data: existingRows, error: countError } = await supabaseAdmin
       .from("responses")
-      .select("*", { count: "exact", head: true })
+      .select("scenario_number")
       .eq("access_code_id", accessCodeId)
       .eq("student_name", studentName);
 
@@ -46,7 +46,8 @@ export async function POST(request) {
       );
     }
 
-    if (count >= MAX_REQUESTS_PER_CODE) {
+    const uniqueScenarios = new Set(existingRows?.map(r => r.scenario_number)).size;
+    if (uniqueScenarios >= MAX_REQUESTS_PER_CODE) {
       return NextResponse.json(
         { error: "Bu kod için istek limiti aşıldı." },
         { status: 429 }
@@ -162,10 +163,10 @@ Lütfen her bir soruya verdiği cevap için JSON formatında yapıcı bir geri b
       parsedFeedback.category_3 || "geliştirilebilir"
     ];
 
-    // --- Save response to DB server-side ---
+    // --- Save response to DB server-side (upsert to handle re-submissions) ---
     const { error: insertError } = await supabaseAdmin
       .from("responses")
-      .insert({
+      .upsert({
         access_code_id: accessCodeId,
         student_name: studentName,
         scenario_number: scenarioNumber,
@@ -176,11 +177,16 @@ Lütfen her bir soruya verdiği cevap için JSON formatında yapıcı bir geri b
         category_1: categoryArray[0],
         category_2: categoryArray[1],
         category_3: categoryArray[2],
+      }, {
+        onConflict: "access_code_id,student_name,scenario_number"
       });
 
     if (insertError) {
       console.error("Failed to save response:", insertError);
-      // Don't fail the request — student still gets their feedback
+      return NextResponse.json(
+        { error: `Cevaplar kaydedilemedi: ${insertError.message}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

@@ -22,12 +22,21 @@ To enable the live student dashboard with optimal performance, you need to run t
    - Wait for the execution to complete (should be instant)
    - You should see "Success. No rows returned" message
 
-5. **Verify the setup**
+5. **Run the unique constraint migration**
+   - Copy the SQL from `migrations/add_unique_constraint.sql`
+   - Paste it into a new SQL Editor query
+   - Run it to add the unique constraint for proper upsert behavior
+
+6. **Verify the setup**
    - In the SQL Editor, run this query to check if the materialized view was created:
      ```sql
      SELECT * FROM mv_student_status;
      ```
    - You should see student status data if any responses exist
+   - Verify the unique constraint exists:
+     ```sql
+     SELECT conname FROM pg_constraint WHERE conname = 'responses_unique_submission';
+     ```
 
 ## What This SQL Does:
 
