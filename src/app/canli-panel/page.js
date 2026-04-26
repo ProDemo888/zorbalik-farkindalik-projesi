@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { fetchInitialStats, verifyCompletion } from "./actions";
 import { scenarios } from "@/lib/scenarios";
@@ -28,6 +28,13 @@ const IconWifiOff = () => (
   </svg>
 );
 
+const IconRefresh = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </svg>
+);
+
 export default function LivePanel() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -35,14 +42,15 @@ export default function LivePanel() {
   const [stats, setStats] = useState({
     totalAnswers: 0,
     completedStudents: 0,
-    activeStudents: 0,
+    totalStudents: 0,
     recentResponses: [],
   });
   const [showAIFeedback, setShowAIFeedback] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("connecting"); // connecting, connected, disconnected
+  const [refreshing, setRefreshing] = useState(false);
 
   // Real-time hook
-  const { newResponses, connectionStatus: rtConnectionStatus } = useRealtime();
+  const { newResponses, clearNewResponses, connectionStatus: rtConnectionStatus } = useRealtime();
 
   useEffect(() => {
     // Verify completion and fetch initial data
@@ -89,18 +97,28 @@ export default function LivePanel() {
     }
   }, [rtConnectionStatus]);
 
+  async function handleRefresh() {
+    setRefreshing(true);
+    const freshData = await fetchInitialStats();
+    if (!freshData.error) {
+      setStats(freshData);
+      clearNewResponses();
+    }
+    setRefreshing(false);
+  }
+
   // Combine initial responses with new real-time responses
-  const allResponses = [
+  const allResponses = useMemo(() => [
     ...stats.recentResponses,
     ...newResponses,
-  ].slice(0, 50); // Limit to 50 for performance
+  ].slice(0, 50), [stats.recentResponses, newResponses]);
 
-  // Recalculate stats based on all responses
-  const recalculatedStats = {
-    totalAnswers: stats.totalAnswers + newResponses.length,
-    completedStudents: stats.completedStudents,
-    activeStudents: stats.activeStudents,
-  };
+  // Memoize so LiveStats only re-renders when values actually change
+  const recalculatedStats = useMemo(() => ({
+    totalAnswers: (stats.totalAnswers || 0) + newResponses.length,
+    completedStudents: stats.completedStudents || 0,
+    totalStudents: stats.totalStudents || 0,
+  }), [stats.totalAnswers, stats.completedStudents, stats.totalStudents, newResponses.length]);
 
   if (loading) {
     return (
@@ -181,6 +199,24 @@ export default function LivePanel() {
                   </>
                 )}
               </div>
+
+              {/* Refresh Button */}
+              <button
+                className="btn btn-secondary"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                style={{ opacity: refreshing ? 0.6 : 1 }}
+              >
+                <span style={{
+                  display: "inline-flex",
+                  width: 16,
+                  height: 16,
+                  animation: refreshing ? "spin 0.8s linear infinite" : "none",
+                }}>
+                  <IconRefresh />
+                </span>
+                {refreshing ? "Yenileniyor..." : "Yenile"}
+              </button>
 
               {/* Back Button */}
               <button

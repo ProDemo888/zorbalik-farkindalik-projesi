@@ -82,6 +82,7 @@ export function useRealtime() {
 
   return {
     newResponses,
+    clearNewResponses: () => setNewResponses([]),
     connectionStatus,
   };
 }

@@ -32,34 +32,23 @@ function generateColor(codeId) {
   return colors[index];
 }
 
-// Generate initials from student name
-function generateInitials(name) {
-  if (!name) return "?";
-
-  const parts = name.trim().split(" ");
-  if (parts.length === 1) {
-    return parts[0].charAt(0).toUpperCase();
-  } else {
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+// Generate a consistent anonymous number (1–99) from access_code_id
+function generateAnonNumber(codeId) {
+  if (!codeId) return 1;
+  let hash = 0;
+  const str = String(codeId);
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
   }
-}
-
-// Generate partial name for privacy
-function generatePartialName(name) {
-  if (!name) return "Anonim";
-
-  const parts = name.trim().split(" ");
-  if (parts.length === 1) {
-    return parts[0];
-  } else {
-    return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
-  }
+  return (Math.abs(hash) % 99) + 1;
 }
 
 export default function StudentAvatar({ accessCodeId, studentName, size = 40 }) {
   const color = useMemo(() => generateColor(accessCodeId), [accessCodeId]);
-  const initials = useMemo(() => generateInitials(studentName), [studentName]);
-  const partialName = useMemo(() => generatePartialName(studentName), [studentName]);
+  const anonNumber = useMemo(() => generateAnonNumber(accessCodeId), [accessCodeId]);
+  const label = `Öğrenci #${anonNumber}`;
 
   return (
     <div
@@ -85,7 +74,7 @@ export default function StudentAvatar({ accessCodeId, studentName, size = 40 }) 
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {initials}
+        {anonNumber}
       </div>
       <div
         style={{
@@ -94,7 +83,7 @@ export default function StudentAvatar({ accessCodeId, studentName, size = 40 }) 
           color: "var(--text-primary)",
         }}
       >
-        {partialName}
+        {label}
       </div>
     </div>
   );

@@ -13,7 +13,8 @@
       "Bash(python scripts/search.py \"professional modern clean education\" --domain typography -n 5)",
       "Bash(npm run:*)",
       "Bash(pandoc \"ŞAKA MI ZORBALIK MI \\(1\\).docx\" -t plain)",
-      "Bash(where pandoc *)"
+      "Bash(where pandoc *)",
+      "mcp__eef9f42c-d839-41dd-98fa-a22ffc2e59bf__list_projects"
     ]
   }
 }
