@@ -6,6 +6,7 @@ import { validateAndUseCode } from "@/app/actions";
 
 // Steps: 0=login, (2k-1)=scenario k, (2k)=feedback k (k=1..N), (2N+1)=thankyou
 const N = scenarios.length;
+const CLASS_OPTIONS = ["Fen-1", "9/A", "9/B", "9/C", "9/D", "9/E", "9/F", "9/G"];
 const THANKYOU_STEP = 2 * N + 1;
 
 function isScenarioStep(s) { return s % 2 === 1 && s >= 1 && s <= 2 * N - 1; }
@@ -61,6 +62,7 @@ export default function Home() {
   const [code, setCode] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [className, setClassName] = useState("");
   const [codeId, setCodeId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -135,6 +137,7 @@ export default function Home() {
           studentName: fullName,
           accessCodeId: codeId,
           scenarioNumber: scenarioNum,
+          className: className,
         }),
       });
 
@@ -277,6 +280,22 @@ export default function Home() {
               </div>
 
               <div className="form-group">
+                <label className="form-label" htmlFor="className">Sınıfın</label>
+                <select
+                  id="className"
+                  className="form-input"
+                  value={className}
+                  onChange={(e) => setClassName(e.target.value)}
+                  required
+                >
+                  <option value="">Sınıf seçin</option>
+                  {CLASS_OPTIONS.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
                 <label className="form-label" htmlFor="accessCode">Erişim Kodu</label>
                 <input
                   id="accessCode"
@@ -296,7 +315,7 @@ export default function Home() {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading || !firstName.trim() || !lastName.trim() || !code.trim()}
+                disabled={loading || !firstName.trim() || !lastName.trim() || !className || !code.trim()}
               >
                 {loading ? (
                   "Kontrol Ediliyor..."

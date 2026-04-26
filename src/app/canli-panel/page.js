@@ -46,8 +46,11 @@ export default function LivePanel() {
     recentResponses: [],
   });
   const [showAIFeedback, setShowAIFeedback] = useState(false);
+  const [classFilter, setClassFilter] = useState("all");
   const [connectionStatus, setConnectionStatus] = useState("connecting"); // connecting, connected, disconnected
   const [refreshing, setRefreshing] = useState(false);
+
+  const CLASS_OPTIONS = ["Fen-1", "9/A", "9/B", "9/C", "9/D", "9/E", "9/F", "9/G"];
 
   // Real-time hook
   const { newResponses, clearNewResponses, connectionStatus: rtConnectionStatus } = useRealtime();
@@ -112,6 +115,12 @@ export default function LivePanel() {
     ...stats.recentResponses,
     ...newResponses,
   ].slice(0, 50), [stats.recentResponses, newResponses]);
+
+  const filteredResponses = useMemo(() =>
+    classFilter === "all"
+      ? allResponses
+      : allResponses.filter((r) => r.class_name === classFilter),
+    [allResponses, classFilter]);
 
   // Memoize so LiveStats only re-renders when values actually change
   const recalculatedStats = useMemo(() => ({
@@ -247,12 +256,23 @@ export default function LivePanel() {
           </div>
         </div>
 
-        {/* AI Feedback Toggle */}
-        <div style={{ marginBottom: 16 }}>
+        {/* Filters Row */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+          <select
+            className="form-input"
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            style={{ flex: "0 0 auto", minWidth: 150 }}
+          >
+            <option value="all">Tüm Sınıflar</option>
+            {CLASS_OPTIONS.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
           <button
             className={`btn ${showAIFeedback ? "btn-primary" : "btn-secondary"}`}
             onClick={() => setShowAIFeedback(!showAIFeedback)}
-            style={{ width: "100%" }}
+            style={{ flex: 1 }}
           >
             {showAIFeedback ? "AI Geri Bildirimlerini Gizle" : "AI Geri Bildirimlerini Göster"}
           </button>
@@ -260,13 +280,13 @@ export default function LivePanel() {
 
         {/* Live Feed */}
         <LiveFeed
-          responses={allResponses}
+          responses={filteredResponses}
           showAIFeedback={showAIFeedback}
           scenarios={scenarios}
         />
 
         {/* Empty State */}
-        {allResponses.length === 0 && (
+        {filteredResponses.length === 0 && (
           <div className="card" style={{ textAlign: "center", padding: 64 }}>
             <div style={{
               width: 80,

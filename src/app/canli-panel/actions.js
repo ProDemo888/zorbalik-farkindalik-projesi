@@ -9,7 +9,7 @@ export async function fetchInitialStats() {
       // All (access_code_id, student_name, scenario_number) for computing student stats
       supabaseAdmin
         .from("responses")
-        .select("access_code_id, student_name, scenario_number"),
+        .select("access_code_id, student_name, scenario_number, class_name"),
 
       // Recent responses for the feed
       supabaseAdmin
@@ -18,6 +18,7 @@ export async function fetchInitialStats() {
           id,
           access_code_id,
           student_name,
+          class_name,
           scenario_number,
           answer_1,
           answer_2,

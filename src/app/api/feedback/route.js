@@ -22,7 +22,7 @@ Kurallar:
 
 export async function POST(request) {
   try {
-    const { scenario, answers, studentName, accessCodeId, scenarioNumber } = await request.json();
+    const { scenario, answers, studentName, accessCodeId, scenarioNumber, className } = await request.json();
 
     if (!scenario || !answers || answers.length !== 3 || !accessCodeId || !scenarioNumber) {
       return NextResponse.json(
@@ -170,6 +170,7 @@ Lütfen her bir soruya verdiği cevap için JSON formatında yapıcı bir geri b
         access_code_id: accessCodeId,
         student_name: studentName,
         scenario_number: scenarioNumber,
+        class_name: className || null,
         answer_1: answers[0],
         answer_2: answers[1],
         answer_3: answers[2],

@@ -28,7 +28,7 @@ export function useRealtime() {
           schema: "public",
           table: "responses",
           // Select only necessary columns to reduce payload
-          select: "access_code_id,student_name,scenario_number,answer_1,answer_2,answer_3,ai_feedback,created_at",
+          select: "access_code_id,student_name,class_name,scenario_number,answer_1,answer_2,answer_3,ai_feedback,created_at",
         },
         (payload) => {
           // Add to pending responses for debouncing

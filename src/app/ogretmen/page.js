@@ -95,6 +95,7 @@ export default function TeacherDashboard() {
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [classFilter, setClassFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showStats, setShowStats] = useState(false);
   const [expandedScenarios, setExpandedScenarios] = useState({});
@@ -153,11 +154,14 @@ export default function TeacherDashboard() {
     setResponses([]);
   }
 
+  const CLASS_OPTIONS = ["Fen-1", "9/A", "9/B", "9/C", "9/D", "9/E", "9/F", "9/G"];
+
   const filtered = responses.filter((r) => {
     const matchesFilter = filter === "all" || r.scenario_number === parseInt(filter);
     const matchesSearch =
       !searchTerm || r.student_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
+    const matchesClass = classFilter === "all" || r.class_name === classFilter;
+    return matchesFilter && matchesSearch && matchesClass;
   });
 
   const totalStudents = new Set(responses.map((r) => r.access_code_id)).size;
@@ -363,6 +367,16 @@ export default function TeacherDashboard() {
             />
             <select
               className="form-input"
+              value={classFilter}
+              onChange={(e) => setClassFilter(e.target.value)}
+            >
+              <option value="all">Tüm Sınıflar</option>
+              {CLASS_OPTIONS.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <select
+              className="form-input"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
@@ -431,6 +445,11 @@ export default function TeacherDashboard() {
 
                 <div className="student-name">
                   {r.student_name}
+                  {r.class_name && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--accent-primary)", fontWeight: 600, marginLeft: 8, background: "var(--accent-primary-bg)", padding: "2px 8px", borderRadius: 999 }}>
+                      {r.class_name}
+                    </span>
+                  )}
                   <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 400, marginLeft: 12 }}>
                     {new Date(r.created_at).toLocaleString("tr-TR")}
                   </span>
